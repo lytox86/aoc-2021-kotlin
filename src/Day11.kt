@@ -1,21 +1,62 @@
 fun main() {
-    fun part1(input: List<String>): Long {
-        return 0
+    val diffCoords = arrayOf(Pair(-1,-1),Pair(-1,0),Pair(-1,1),Pair(0,-1),Pair(1,-1),Pair(0,1),Pair(1,0),Pair(1,1))
+
+
+    fun parseInput(input: List<String>): Array<IntArray> {
+        return Array(10) { r -> IntArray(10) { c -> input[r][c].digitToInt() } }
     }
 
-0
-
-    fun part2(input: List<String>): Long {
-        return 0
+    fun stepForwardOnce(matrix: Array<IntArray>): Int {
+        val queue = ArrayDeque<Pair<Int, Int>>()
+        for (r in matrix.indices) {
+            for (c in matrix[0].indices) {
+                matrix[r][c]++
+                if (matrix[r][c] > 9) queue.addLast(Pair(r, c))
+            }
+        }
+        var cnt = 0
+        val flashed = Array(10) { BooleanArray(10) }
+        while (queue.isNotEmpty()) {
+            val (row, col) = queue.removeFirst()
+            matrix[row][col] = 0
+            flashed[row][col] = true
+            cnt++
+            for (diffCoord in diffCoords) {
+                val r = row + diffCoord.first
+                val c = col + diffCoord.second
+                if (r !in 0 until 10 || c !in 0 until 10 || flashed[r][c] || matrix[r][c] > 9) continue
+                matrix[r][c]++
+                if (matrix[r][c] > 9) queue.addLast(Pair(r, c))
+            }
+        }
+        return cnt
     }
 
+    fun part1(input: List<String>): Int {
+        val matrix = parseInput(input)
+        var re = 0
+        repeat(100) {
+            re += stepForwardOnce(matrix)
+        }
+        return re
+    }
+
+    fun part2(input: List<String>): Int {
+        val matrix = parseInput(input)
+        var cnt = 0
+        while (true) {
+            val flashes = stepForwardOnce(matrix)
+            cnt++
+            if (flashes == 100) return cnt
+        }
+    }
 
     // test if implementation meets criteria from the description, like:
     val testInput = readInput("Day11_test")
-    check(part1(testInput) == 0L)
-    check(part2(testInput) == 0L)
+    check(part1(testInput) == 1656)
+    check(part2(testInput) == 195)
 
     val input = readInput("Day11")
-    println(part1(input)) // 0
-    println(part2(input)) // 0
+    println(part1(input)) // 1608
+    println(part2(input)) // 214
 }
